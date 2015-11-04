@@ -1,10 +1,13 @@
-defmodule ArgentTest do
+defmodule Argent.Test do
   use ExUnit.Case
   doctest Argent
 
   setup do
+    Logger.remove_backend(:console)
     :application.stop(:argent)
     :ok = :application.start(:argent)
+    Logger.add_backend(:console, flush: true)
+    :ok
   end
 
   test "instantiate amounts of common currency" do

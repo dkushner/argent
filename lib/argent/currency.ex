@@ -7,6 +7,7 @@ defmodule Argent.Currency do
   @data_path "priv/currencies.ex"
 
   @type code :: String.t
+  @type iso_numeric :: integer
   @opaque t :: %@h{
     name: String.t,                 
     iso_code: String.t,             
@@ -40,6 +41,17 @@ defmodule Argent.Currency do
     subunit_to_unit: 100,
     symbol_first: true
 
+  # Instance Methods
+  @spec exponent(t) :: float
+  def exponent(%@h{subunit_to_unit: s}) do
+    :math.log10(s)
+  end
+
+  @spec symbol_position(t) :: atom
+  def symbol_position(%@h{symbol_first: s}) do
+    s && :before || :after
+  end
+
   # Client API
 
   def start_link(opts \\ []) do
@@ -64,6 +76,15 @@ defmodule Argent.Currency do
     GenServer.call(__MODULE__, {:find, code})
   end
 
+  @spec find_by_iso_numeric(iso_numeric) :: t | nil
+  @spec find_by_iso_numeric(String.t) :: t | nil
+  def find_by_iso_numeric(code) when is_binary(code) do
+    GenServer.call(__MODULE__, {:find_by_iso_numeric, code})
+  end
+
+  def find_by_iso_numeric(code) when is_integer(code), 
+    do: find_by_iso_numeric(Integer.to_string(code))
+
   @spec register(%{iso_code: code}) :: t
   def register(%{iso_code: iso_code}=data) do
     GenServer.call(__MODULE__, {:register, data})
@@ -73,6 +94,13 @@ defmodule Argent.Currency do
   def handle_call({:find, code}, _from, state) do
     case :ets.lookup(state.table, code) do
       [{^code, info}] -> {:reply, info, state}
+      [] -> {:no_reply, state}
+    end
+  end
+
+  def handle_call({:find_by_iso_numeric, code}, _from, state) do
+    case :ets.match_object(state.table, {:"_", %{iso_numeric: code}}) do
+      [{_, curr}] -> {:reply, curr, state}
       [] -> {:no_reply, state}
     end
   end

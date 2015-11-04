@@ -35,6 +35,12 @@ defmodule Argent.Formatting do
       iex> Argent.new(100, "AUD") |> Argent.format(disambiguate: true)
       "A$100.00"
 
+      iex> Argent.new(100, "AUD") |> Argent.format(symbol_position: :after)
+      "100.00 A$"
+
+      iex> Argent.new(100000000, "USD") |> Argent.format(south_asian: true)
+      "$10,00,00,000.00"
+
   """
   @spec format(t, options) :: format
   def format(%@h{fractional: f, currency: c}, opts \\ []) do

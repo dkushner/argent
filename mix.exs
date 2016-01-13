@@ -7,6 +7,7 @@ defmodule Argent.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: description,
      deps: deps]
   end
 
@@ -18,6 +19,12 @@ defmodule Argent.Mixfile do
       applications: [:logger],
       mod: {Argent, []}
     ]
+  end
+
+  defp description do
+    """
+    A currency management library for elixir.
+    """
   end
 
   # Dependencies can be Hex packages:

@@ -35,8 +35,8 @@ defmodule Argent.Formatting do
       iex> Argent.new(100, "AUD") |> Argent.format(disambiguate: true)
       "A$100.00"
 
-      iex> Argent.new(100, "AUD") |> Argent.format(symbol_position: :after)
-      "100.00 A$"
+      iex> Argent.new(100, "AUD") |> Argent.format(symbol_position: :after, pad_symbol: true)
+      "100.00 $"
 
       iex> Argent.new(100000000, "USD") |> Argent.format(south_asian: true)
       "$10,00,00,000.00"
@@ -126,19 +126,21 @@ defmodule Argent.Formatting do
     # replace that digit with itself followed by a comma. If we're doing 
     # South Asian formatting, remove the lowest triplet and perform the same
     # substitution for two digits.
+    replacement = "\\1" <> Regex.escape(opts[:thousands_separator])
+
     if opts[:south_asian] do
       pairs = String.slice(char, 0..-4)
       triplet = String.slice(char, -3..-1)
 
       char = Enum.join([
-        String.replace(pairs, ~r/\d(?=(?:\d{2})+(?!\d))/, opts[:thousands_separator]),
+        String.replace(pairs, ~r/(\d)(?=(?:\d{2})+(?!\d))/, replacement),
         triplet
       ], opts[:thousands_separator])
 
       Enum.join([char, mant], opts[:decimal_mark])
     else
       Enum.join([
-        String.replace(char, ~r/\d(?=(?:\d{3})+(?!\d))/, opts[:thousands_separator]), 
+        String.replace(char, ~r/(\d)(?=(?:\d{3})+(?!\d))/, replacement),
         mant
       ], opts[:decimal_mark])
     end

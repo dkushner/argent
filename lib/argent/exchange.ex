@@ -14,6 +14,18 @@ defmodule Argent.Exchange do
     {:ok, %{table: table}}
   end
 
+  @doc """
+  Sets the available rate from one currency to another. The inverse rate will also
+  be added to the rate store. 
+
+  ## Examples
+  
+      iex> Argent.Exchange.set_rate("USD", "EUR", 1.5)
+      :ok
+
+      iex> Argent.Exchange.get_rate("USD")
+
+  """
   def set_rate(from, to, rate) do
     GenServer.cast(__MODULE__, {:set_rate, from, to, rate})
   end
@@ -33,7 +45,7 @@ defmodule Argent.Exchange do
   def handle_call({:get_rate, from, to}, _from, state) do
     case :ets.lookup(state.table, {from, to}) do
       [{{^from, ^to}, rate}] -> {:reply, rate, state}
-      [] -> {:noreply, state}
+      [] -> {:reply, nil, state}
     end
   end
 
